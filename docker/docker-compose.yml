@@ -1,0 +1,64 @@
+version: '3.8'
+
+name: mvp-store-backend
+
+services:
+  nginx:
+    container_name: store_backend_nginx
+    build:
+      context: nginx
+      dockerfile: Dockerfile
+    volumes:
+      - ../:/var/www/store
+    ports:
+      - "8181:80"
+    depends_on:
+      - php-fpm
+    networks:
+      - mvp-store
+
+  php-fpm:
+    container_name: store_backend_php-fpm
+    build:
+      context: php-fpm
+      dockerfile: Dockerfile
+    volumes:
+      - ../:/var/www/store
+    depends_on:
+      - database
+      - redis
+    networks:
+      - mvp-store
+
+  database:
+    container_name: store_backend_database
+    image: postgres:15.1-alpine
+    volumes:
+      - backend_database:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: store_user
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: store_backend
+    ports:
+      - "5431:5432"
+    networks:
+      - mvp-store
+
+  redis:
+    container_name: store_backend_redis
+    image: redis:6.0-alpine
+    volumes:
+      - backend_redis:/data
+    ports:
+      - "6371:6379"
+    command: redis-server --requirepass secret
+    networks:
+      - mvp-store
+
+volumes:
+  backend_database:
+  backend_redis:
+
+networks:
+  mvp-store:
+    external: true
