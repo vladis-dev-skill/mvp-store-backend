@@ -1,64 +1,38 @@
-version: '3.8'
-
 name: mvp-store-backend
 
 services:
-  nginx:
-    container_name: store_backend_nginx
+  backend:
+    container_name: mvp-store-backend
     build:
-      context: nginx
-      dockerfile: Dockerfile
-    volumes:
-      - ../:/var/www/store
+      context: ..
+      dockerfile: docker/Dockerfile
     ports:
-      - "8181:80"
-    depends_on:
-      - php-fpm
-    networks:
-      - mvp-store
-
-  php-fpm:
-    container_name: store_backend_php-fpm
-    build:
-      context: php-fpm
-      dockerfile: Dockerfile
+      - "8080:8080"  # Internal port for API Gateway
+      - "8181:8080"  # External port for direct access (dev)
     volumes:
       - ../:/var/www/store
-    depends_on:
-      - database
-      - redis
     networks:
-      - mvp-store
+      - mvp_store_network
+    restart: unless-stopped
 
-  database:
-    container_name: store_backend_database
-    image: postgres:15.1-alpine
-    volumes:
-      - backend_database:/var/lib/postgresql/data
+  postgres:
+    container_name: mvp-store-backend-postgres-local
+    image: postgres:15-alpine
     environment:
-      POSTGRES_USER: store_user
-      POSTGRES_PASSWORD: secret
       POSTGRES_DB: store_backend
+      POSTGRES_USER: mvp_user
+      POSTGRES_PASSWORD: mvp_secret
     ports:
       - "5431:5432"
-    networks:
-      - mvp-store
-
-  redis:
-    container_name: store_backend_redis
-    image: redis:6.0-alpine
     volumes:
-      - backend_redis:/data
-    ports:
-      - "6371:6379"
-    command: redis-server --requirepass secret
+      - backend_postgres_local:/var/lib/postgresql/data
     networks:
-      - mvp-store
+      - mvp_store_network
 
 volumes:
-  backend_database:
-  backend_redis:
+  backend_postgres_local:
 
 networks:
-  mvp-store:
+  mvp_store_network:
+    name: mvp_store_network
     external: true
