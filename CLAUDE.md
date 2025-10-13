@@ -41,23 +41,24 @@ php bin/phpunit                             # Run tests directly
 ## Architecture & Services
 
 ### Docker Infrastructure
-- **Nginx** (port 8181): Web server and reverse proxy
-- **PHP-FPM**: Symfony application container
-- **PostgreSQL** (port 5431): Main database (`store_backend` db)
-- **Redis** (port 6371): Cache and session storage
+- **Backend Container** (`mvp-store-backend`): Nginx + PHP-FPM (ports 8091, 8191)
+- **PostgreSQL** (`mvp-store-backend-postgres-local`): Database on port 5441 (`store_backend` db)
+- **Redis** (shared `mvp-store-redis`): Cache on port 6380
+- **RabbitMQ** (shared `mvp-store-rabbitmq`): Message queue on ports 5680, 15680
 
 ### Microservices Communication
 - **Payment Service**: Communicates via `PaymentClient` service
-- **Network**: Uses external `mvp-store` Docker network for inter-service communication
-- **Service Discovery**: Payment service accessible at `http://store_payment_nginx`
+- **Network**: Uses external `mvp_store_network` Docker network for inter-service communication
+- **Service Discovery**: Payment service accessible at `http://mvp-store-payment:8080`
+- **Environment Variable**: `PAYMENT_SERVICE_URL="http://mvp-store-payment:8080"`
 
 ## Database Configuration
 
 **Connection Details:**
-- Host: localhost:5431 (external), database:5432 (internal)
+- Host: localhost:5441 (external), postgres:5432 (internal container name)
 - Database: `store_backend`
-- User: `store_user`
-- Password: `secret`
+- User: `mvp_user`
+- Password: `mvp_secret`
 
 **Migration Workflow:**
 1. Create entities or modify existing ones
@@ -100,16 +101,23 @@ php bin/phpunit                             # Run tests directly
 
 **External Network:**
 ```bash
-make network-create    # Create shared mvp-store network
+make network-create    # Create shared mvp_store_network
 make network-remove    # Remove shared network
 ```
 
-The `mvp-store` network enables communication between backend and payment service containers.
+The `mvp_store_network` enables communication between backend and payment service containers.
 
 ## Service Health Monitoring
 
 **Health Check Endpoints:**
-- `/api/test/health` - Backend service health
-- `/api/test/payment-service-health` - Cross-service communication test
+- `/health` - Backend service health
+- `/payment-service-health` - Cross-service communication test
+
+**Usage Examples:**
+```bash
+curl http://localhost:8191/health                    # Backend health (direct)
+curl http://localhost:8191/payment-service-health    # Payment communication test
+curl http://localhost:8090/api/health                # Backend via API Gateway
+```
 
 These endpoints are useful for monitoring microservice connectivity and health status.

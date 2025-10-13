@@ -7,8 +7,8 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
     ports:
-      - "8080:8080"  # Internal port for API Gateway
-      - "8181:8080"  # External port for direct access (dev)
+      - "8091:8080"  # Internal port for API Gateway
+      - "8191:8080"  # External port for direct access (dev)
     volumes:
       - ../:/var/www/store
     networks:
@@ -23,7 +23,7 @@ services:
       POSTGRES_USER: mvp_user
       POSTGRES_PASSWORD: mvp_secret
     ports:
-      - "5431:5432"
+      - "5441:5432"
     volumes:
       - backend_postgres_local:/var/lib/postgresql/data
     networks:

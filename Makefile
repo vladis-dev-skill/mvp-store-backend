@@ -4,7 +4,7 @@
 
 init: network-create docker-build up run-app
 	@echo "✅ Backend service initialized successfully!"
-	@echo "🌐 Service available at: http://localhost:8181 (direct) or http://localhost/api (via gateway)"
+	@echo "🌐 Service available at: http://localhost:8191 (direct) or http://localhost:8090/api (via gateway)"
 
 up:
 	docker-compose -f docker/docker-compose.yml up -d
