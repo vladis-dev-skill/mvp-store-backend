@@ -38,15 +38,20 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN addgroup -g 1000 -S www && \
     adduser -u 1000 -S www -G www
 
-# Set working directory
+# Set working directory and ensure proper ownership
 WORKDIR /var/www/store
+
+# Create directories with proper permissions BEFORE copying
+RUN mkdir -p /var/www/store && \
+    chown -R www:www /var/www/store
 
 # Copy application files
 COPY --chown=www:www . .
 
-# Install dependencies
+# Configure git safe directory and install dependencies as www user
 USER www
-RUN composer install --optimize-autoloader --no-interaction
+RUN git config --global --add safe.directory /var/www/store && \
+    composer install --optimize-autoloader --no-interaction --no-scripts
 
 # Switch back to root for configuration
 USER root
