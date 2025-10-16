@@ -24,7 +24,6 @@ test:
 
 docker-build:
 	docker-compose -f docker/docker-compose.yml build --no-cache
-	#docker-compose -f docker/docker-compose.yml build
 
 clean: down
 	docker-compose -f docker/docker-compose.yml down -v --remove-orphans
