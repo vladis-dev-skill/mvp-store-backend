@@ -30,7 +30,7 @@ class TestController extends AbstractController
     {
         try {
             $isHealthy = $this->paymentClient->healthCheck();
-            
+
             return $this->json([
                 'payment_service_status' => $isHealthy ? 'healthy' : 'unhealthy',
                 'backend_service' => 'ok',
