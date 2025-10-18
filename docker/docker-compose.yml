@@ -9,6 +9,8 @@ services:
     ports:
       - "8091:8080"  # Internal port for API Gateway
       - "8191:8080"  # External port for direct access (dev)
+    environment:
+      - PAYMENT_SERVICE_URL=http://mvp-store-gateway
     volumes:
       - ../:/var/www/store
     networks:

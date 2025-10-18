@@ -22,19 +22,27 @@ class PaymentClient
         $this->paymentServiceUrl = $paymentServiceUrl;
     }
 
+    /**
+     * Health check for Payment Service
+     *
+     * Calls Payment Service through API Gateway (systeme.io pattern):
+     * Backend -> Gateway: http://mvp-store-gateway/inner-api/payment/health
+     * Gateway -> Payment: http://mvp-store-payment:8080/inner-api/payment/health
+     */
     public function healthCheck(): bool
     {
         try {
-            $response = $this->httpClient->request('GET', $this->paymentServiceUrl . '/api/health', [
+            $response = $this->httpClient->request('GET', $this->paymentServiceUrl . '/inner-api/payment/health', [
                 'timeout' => 5,
             ]);
 
             return $response->getStatusCode() === 200;
         } catch (\Exception $e) {
             $this->logger->warning('Payment service health check failed', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'url' => $this->paymentServiceUrl . '/inner-api/payment/health'
             ]);
-            
+
             return false;
         }
     }
